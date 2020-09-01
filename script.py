@@ -42,7 +42,7 @@ def save_samples(index, latent_tensors, show=True):
 
 latent_size = 128
 
-device = torch.device("cuda")
+device = torch.device("cpu")
 
 generator = nn.Sequential(
     nn.ConvTranspose2d(
@@ -64,8 +64,8 @@ generator = nn.Sequential(
     # out: 3 x 64 x 64
 )
 
-generator = generator.cuda()
-generator.load_state_dict(torch.load("G.ckpt"))
+
+generator.load_state_dict(torch.load("G.ckpt", map_location="cpu"))
 
 fixed_latent = torch.randn(64, latent_size, 1, 1, device=device)
 sample_dir = "generate"
