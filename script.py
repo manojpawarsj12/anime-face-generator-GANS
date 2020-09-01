@@ -1,6 +1,3 @@
-from torch.utils.data import DataLoader
-from torchvision.datasets import ImageFolder
-import torchvision.transforms as T
 import torch
 from torchvision.utils import make_grid
 import matplotlib.pyplot as plt
