@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import torch.nn as nn
 from torchvision.utils import save_image
 import os
+import time
 
 image_size = 64
 batch_size = 128
@@ -67,9 +68,14 @@ generator = nn.Sequential(
 
 generator.load_state_dict(torch.load("G.ckpt", map_location="cpu"))
 
-fixed_latent = torch.randn(64, latent_size, 1, 1, device=device)
+# fixed_latent = torch.randn(64, latent_size, 1, 1, device=device)
 sample_dir = "generate"
 os.makedirs(sample_dir, exist_ok=True)
 
-save_samples(1, fixed_latent, show=True)
+i = 0
+while True:
+    fixed_latent = torch.randn(64, latent_size, 1, 1, device=device)
+    save_samples(i, fixed_latent, show=True)
+    i += 1
+    time.sleep(4)
 
