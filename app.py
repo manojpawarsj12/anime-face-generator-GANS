@@ -1,14 +1,18 @@
+from flask import Flask, render_template, url_for, Response
 import torch
 from torchvision.utils import make_grid
 import matplotlib.pyplot as plt
 import torch.nn as nn
 from torchvision.utils import save_image
 import os
-import time
+import io
+from PIL import Image
+
 
 image_size = 64
 batch_size = 128
 stats = (0.5, 0.5, 0.5), (0.5, 0.5, 0.5)
+app = Flask(__name__)
 
 
 def denorm(img_tensors):
@@ -28,10 +32,14 @@ def show_batch(dl, nmax=64):
         break
 
 
+os.makedirs("static", exist_ok=True)
+statsdir = "static"
+
+
 def save_samples(index, latent_tensors, show=True):
     fake_images = generator(latent_tensors)
     fake_fname = "generated-images-{0:0=4d}.png".format(index)
-    save_image(denorm(fake_images), os.path.join(sample_dir, fake_fname), nrow=8)
+    save_image(denorm(fake_images), os.path.join(statsdir, fake_fname), nrow=8)
     print("Saving", fake_fname)
     if show:
         fig, ax = plt.subplots(figsize=(8, 8))
@@ -68,14 +76,20 @@ generator = nn.Sequential(
 
 generator.load_state_dict(torch.load("G.ckpt", map_location="cpu"))
 
-# fixed_latent = torch.randn(64, latent_size, 1, 1, device=device)
-sample_dir = "generate"
-os.makedirs(sample_dir, exist_ok=True)
 
-i = 0
-while True:
+@app.route("/", methods=["GET"])
+def hello():
+
     fixed_latent = torch.randn(64, latent_size, 1, 1, device=device)
-    save_samples(i, fixed_latent, show=True)
-    i += 1
-    time.sleep(4)
+    save_samples(0, fixed_latent, show=False)
+
+    img = Image.open("static/generated-images-0000.png")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    byte_im = buf.getvalue()
+    return Response(response=byte_im, mimetype="image/png")
+
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)
 
